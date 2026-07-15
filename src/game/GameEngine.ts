@@ -60,6 +60,11 @@ export class GameEngine {
   private stars: StarParticle[] = [];
   private rain: RainParticle[] = [];
 
+  private touchStartX: number = 0;
+  private touchStartY: number = 0;
+  private touchActive: boolean = false;
+  private swipeThreshold: number = 40;
+
   constructor(canvas: HTMLCanvasElement, onStateChange: (stats: GameStats) => void) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d')!;
@@ -73,6 +78,10 @@ export class GameEngine {
     this.resize();
     window.addEventListener('resize', this.resize);
     window.addEventListener('keydown', this.handleKeyDown);
+
+    this.canvas.addEventListener('touchstart', this.handleTouchStart, { passive: true });
+    this.canvas.addEventListener('touchmove', this.handleTouchMove, { passive: false });
+    this.canvas.addEventListener('touchend', this.handleTouchEnd, { passive: true });
   }
 
   public buySkin(id: string, cost: number) {
@@ -118,6 +127,9 @@ export class GameEngine {
   public destroy() {
     window.removeEventListener('resize', this.resize);
     window.removeEventListener('keydown', this.handleKeyDown);
+    this.canvas.removeEventListener('touchstart', this.handleTouchStart);
+    this.canvas.removeEventListener('touchmove', this.handleTouchMove);
+    this.canvas.removeEventListener('touchend', this.handleTouchEnd);
     if (this.reqId) cancelAnimationFrame(this.reqId);
     this.audio.destroy();
   }
@@ -183,6 +195,54 @@ export class GameEngine {
       this.player.lane = Math.min(2, this.player.lane + 1);
       this.player.targetX = LANE_OFFSETS[this.player.lane];
     }
+  }
+
+  private handleTouchStart = (e: TouchEvent) => {
+    if (e.touches.length > 0) {
+      this.touchStartX = e.touches[0].clientX;
+      this.touchStartY = e.touches[0].clientY;
+      this.touchActive = true;
+    }
+  }
+
+  private handleTouchMove = (e: TouchEvent) => {
+    if (this.state === 'PLAYING') {
+      // Prevent scrolling the webpage when playing the game
+      if (e.cancelable) {
+        e.preventDefault();
+      }
+    }
+    if (!this.touchActive || e.touches.length === 0 || this.player.crashed || this.state !== 'PLAYING') return;
+
+    const currentX = e.touches[0].clientX;
+    const currentY = e.touches[0].clientY;
+    
+    const diffX = currentX - this.touchStartX;
+    const diffY = currentY - this.touchStartY;
+
+    if (Math.abs(diffX) > Math.abs(diffY)) {
+      if (Math.abs(diffX) > this.swipeThreshold) {
+        if (diffX > 0) {
+          // Swipe Right
+          this.player.lane = Math.min(2, this.player.lane + 1);
+          this.player.targetX = LANE_OFFSETS[this.player.lane];
+        } else {
+          // Swipe Left
+          this.player.lane = Math.max(0, this.player.lane - 1);
+          this.player.targetX = LANE_OFFSETS[this.player.lane];
+        }
+        // Reset starting points so further drag is measured from this spot or requires a new touch
+        this.touchStartX = currentX;
+        this.touchStartY = currentY;
+        // Optionally deactivate or keep tracking. Subway surfers lets you continuously swipe if you keep moving.
+        // Let's set touchActive to false so a complete new swipe is needed for the next move, which is very precise and prevents runaway lane switching.
+        this.touchActive = false;
+      }
+    }
+  }
+
+  private handleTouchEnd = () => {
+    this.touchActive = false;
   }
 
   private initStars() {

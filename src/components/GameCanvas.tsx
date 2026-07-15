@@ -61,6 +61,7 @@ export default function GameCanvas() {
         onEquipSkin={(id) => engineRef.current?.equipSkin(id)}
         onBuyMagnet={(cost) => engineRef.current?.buyMagnet(cost)}
         onBuyShield={(cost) => engineRef.current?.buyShield(cost)}
+        onTogglePause={() => engineRef.current?.togglePause()}
       />
     </div>
   );

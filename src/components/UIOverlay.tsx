@@ -11,6 +11,7 @@ interface UIOverlayProps {
   onEquipSkin: (id: string) => void;
   onBuyMagnet: (cost: number) => void;
   onBuyShield: (cost: number) => void;
+  onTogglePause: () => void;
 }
 
 const SKINS = [
@@ -20,7 +21,7 @@ const SKINS = [
   { id: 'golden', name: 'Golden Horizon', cost: 500 }
 ];
 
-export function UIOverlay({ stats, onStart, onRestart, onOpenShop, onCloseShop, onBuySkin, onEquipSkin, onBuyMagnet, onBuyShield }: UIOverlayProps) {
+export function UIOverlay({ stats, onStart, onRestart, onOpenShop, onCloseShop, onBuySkin, onEquipSkin, onBuyMagnet, onBuyShield, onTogglePause }: UIOverlayProps) {
   return (
     <div className="absolute inset-0 pointer-events-none select-none z-10 font-sans flex flex-col justify-between">
       {/* Notifications */}
@@ -56,6 +57,21 @@ export function UIOverlay({ stats, onStart, onRestart, onOpenShop, onCloseShop, 
                 {stats.coins}
               </div>
               <div className="text-white/30 text-[10px] uppercase tracking-widest mt-2">Press P or Esc to pause</div>
+
+              {/* STABLE, CIRCULAR PAUSE BUTTON MATCHING THE IMAGE (with circular background & parallel rounded bars) */}
+              <div className="pointer-events-auto mt-1">
+                <button 
+                  onClick={onTogglePause}
+                  className="w-12 h-12 rounded-full bg-white/15 hover:bg-white/25 border border-white/20 hover:border-white/40 text-white flex items-center justify-center cursor-pointer shadow-lg transition-colors duration-200"
+                  title="Pause Game"
+                  id="game-pause-button"
+                >
+                  <div className="flex gap-1.5 justify-center items-center">
+                    <div className="w-2.5 h-5 bg-white rounded-full"></div>
+                    <div className="w-2.5 h-5 bg-white rounded-full"></div>
+                  </div>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -166,10 +182,18 @@ export function UIOverlay({ stats, onStart, onRestart, onOpenShop, onCloseShop, 
 
       {stats.state === 'PAUSED' && (
         <div className="absolute inset-0 bg-[#0d0221]/80 backdrop-blur-sm flex flex-col items-center justify-center pointer-events-auto z-40">
-          <h2 className="text-7xl md:text-8xl font-black italic tracking-tighter text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.4)] mb-8">
+          <h2 className="text-7xl md:text-8xl font-black italic tracking-tighter text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.4)] mb-2">
             PAUSED
           </h2>
           <div className="text-white/50 text-xs uppercase tracking-[0.3em] mb-12">Press P or ESC to resume</div>
+          
+          <button 
+            onClick={onTogglePause}
+            className="px-10 py-5 bg-[#00f3ff]/20 backdrop-blur-md border border-[#00f3ff]/50 text-[#00f3ff] font-bold text-xl tracking-[0.3em] uppercase hover:bg-[#00f3ff]/30 hover:shadow-[0_0_30px_rgba(0,243,255,0.3)] hover:-translate-y-1 transition-all cursor-pointer rounded-xl shadow-lg"
+            id="game-resume-button"
+          >
+            Resume Protocol
+          </button>
         </div>
       )}
 
