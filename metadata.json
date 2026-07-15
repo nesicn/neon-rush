@@ -1,0 +1,6 @@
+{
+  "name": "Neon Highway Runner",
+  "description": "A pseudo-3D perspective infinite lane-runner car game.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
